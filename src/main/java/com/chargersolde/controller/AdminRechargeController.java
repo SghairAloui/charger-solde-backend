@@ -1,6 +1,7 @@
 package com.chargersolde.controller;
 
 import com.chargersolde.dto.AdminDashboardDTO;
+import com.chargersolde.dto.ClientRechargeSummary;
 import com.chargersolde.dto.RechargePlanDTO;
 import com.chargersolde.entity.Operator;
 import com.chargersolde.entity.RechargePlan;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+    import java.util.List;
+import com.chargersolde.entity.RechargeStatus;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -37,6 +40,21 @@ public class AdminRechargeController {
         return planService.create(dto);
     }
 
+    @PutMapping("/plans/{id}")
+    public RechargePlan updatePlan(@PathVariable Long id, @RequestBody RechargePlanDTO dto) {
+        return planService.update(id, dto);
+    }
+
+    @DeleteMapping("/plans/{id}")
+    public void deletePlan(@PathVariable Long id) {
+        planService.delete(id);
+    }
+
+    @DeleteMapping("/operators/{id}")
+    public void deleteOperator(@PathVariable Long id) {
+        operatorService.delete(id);
+    }
+
     @PatchMapping("/recharge/{id}")
     public RechargeRequest validate(
             @PathVariable Long id,
@@ -46,13 +64,19 @@ public class AdminRechargeController {
 
     @GetMapping
     public ResponseEntity<AdminDashboardDTO> dashboard(){
-
-
         return ResponseEntity.ok(
                 service.getDashboard()
         );
+    }
 
+    @GetMapping("/clients/recharge-summary")
+    public List<ClientRechargeSummary> getClientRechargeSummary() {
+        return service.getClientRechargeSummary();
+    }
 
+    @GetMapping("/recharge")
+    public List<RechargeRequest> getRecharges(@RequestParam(required = false) RechargeStatus status) {
+        return rechargeService.getAllRequests(status);
     }
 
 }

@@ -81,15 +81,17 @@ public class AuthController {
     }
 
     // =============================================
-    // GET /api/auth/validate-reset-token
+    // POST /api/auth/validate-reset-code
     // =============================================
-    @GetMapping("/validate-reset-token")
+    @PostMapping("/validate-reset-code")
     @Operation(
-        summary = "Valider un token de réinitialisation",
-        description = "Vérifie si le token de réinitialisation est valide et non expiré"
+        summary = "Valider un code de réinitialisation",
+        description = "Vérifie si le code de réinitialisation est valide et non expiré pour l'email donné"
     )
-    public ResponseEntity<ApiResponse<Void>> validateResetToken(@RequestParam String token) {
-        // Si le service ne lève pas d'exception, le token est valide
-        return ResponseEntity.ok(ApiResponse.success("Token valide"));
+    public ResponseEntity<ApiResponse<Void>> validateResetCode(
+            @RequestParam String email,
+            @RequestParam String code) {
+        authService.validateResetCode(email, code);
+        return ResponseEntity.ok(ApiResponse.success("Code valide"));
     }
 }

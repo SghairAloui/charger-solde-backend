@@ -7,11 +7,13 @@ import com.chargersolde.repository.OperatorRepository;
 import com.chargersolde.repository.RechargePlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RechargePlanService {
 
     private final RechargePlanRepository repo;
@@ -34,5 +36,24 @@ public class RechargePlanService {
 
     public List<RechargePlan> getByOperator(Long operatorId) {
         return repo.findByOperatorId(operatorId);
+    }
+
+    public RechargePlan update(Long id, RechargePlanDTO dto) {
+        RechargePlan plan = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+
+        Operator operator = operatorRepository.findById(dto.getOperatorId())
+                .orElseThrow(() -> new RuntimeException("Operator not found"));
+
+        plan.setLabel(dto.getLabel());
+        plan.setPrice(dto.getPrice());
+        plan.setValidityDays(dto.getValidityDays());
+        plan.setOperator(operator);
+
+        return repo.save(plan);
+    }
+
+    public void delete(Long id) {
+        repo.deleteById(id);
     }
 }

@@ -44,7 +44,10 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",
-            "/v3/api-docs/**"
+            "/v3/api-docs/**",
+            "/ws/**",
+            "/topic/**",
+            "/uploads/**"
     };
 
     @Bean
@@ -55,14 +58,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(WHITE_LIST_URLS).permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/operators/**").permitAll()
                 .requestMatchers("/api/client/**").hasRole("CLIENT")
-                    .requestMatchers("/api/operators/**").permitAll()
-                    .requestMatchers("/api/client/**").hasRole("CLIENT")
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/api/profile/**")
-                    .authenticated()
+                .requestMatchers("/api/claims/**").authenticated()
+                .requestMatchers("/api/messages/**").authenticated()
+                .requestMatchers("/api/profile/**").authenticated()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->

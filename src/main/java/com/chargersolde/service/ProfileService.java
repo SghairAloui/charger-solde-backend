@@ -88,6 +88,12 @@ public class ProfileService {
             );
         }
 
+        if(!request.getNewPassword().equals(request.getConfirmPassword())){
+            throw new IllegalArgumentException(
+                    "Les mots de passe ne correspondent pas"
+            );
+        }
+
 
 
         user.setPassword(

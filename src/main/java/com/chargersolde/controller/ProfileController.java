@@ -26,6 +26,10 @@ import java.nio.file.*;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 @RestController
@@ -38,6 +42,10 @@ import java.util.UUID;
 )
 public class ProfileController {
 
+    private static final Logger log = LoggerFactory.getLogger(ProfileController.class);
+
+    @Value("${app.upload.dir:uploads/profile}")
+    private String uploadDir;
 
 
     private final ProfileService profileService;
@@ -131,123 +139,67 @@ public class ProfileController {
      * UPLOAD PHOTO PROFILE
      * ==============================
      */
-    @PostMapping(
-            value = "/photo",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+
+    @PostMapping("/photo")
     public ResponseEntity<?> uploadPhoto(
             @RequestPart("file") MultipartFile file,
             Authentication authentication
-    ) throws IOException {
+    ) {
 
+        log.info("=== Upload photo démarré ===");
+        log.info("Fichier reçu: {} ({} octets)", file.getOriginalFilename(), file.getSize());
 
+        try {
 
         if(file.isEmpty()){
+            log.warn("Fichier vide reçu");
             return ResponseEntity.badRequest()
-                    .body(
-                            Map.of(
-                                    "message",
-                                    "Veuillez sélectionner une image"
-                            )
-                    );
+                    .body(Map.of("message", "Veuillez sélectionner une image"));
         }
 
-
-
-        // Taille max 2 MB
-        if(file.getSize() > 2 * 1024 * 1024){
-
+        if(file.getSize() > 5 * 1024 * 1024){
+            log.warn("Fichier trop gros: {} octets", file.getSize());
             return ResponseEntity.badRequest()
-                    .body(
-                            Map.of(
-                                    "message",
-                                    "Image trop grande (max 2MB)"
-                            )
-                    );
+                    .body(Map.of("message", "Image trop grande (max 5MB)"));
         }
 
+        String email = authentication.getName();
+        log.info("Upload pour utilisateur: {}", email);
 
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        String email =
-                authentication.getName();
+        String extension = getExtension(file.getOriginalFilename());
+        String filename = UUID.randomUUID() + extension;
 
-
-
-        User user =
-                userRepository.findByEmail(email)
-                        .orElseThrow(
-                                () -> new RuntimeException(
-                                        "Utilisateur introuvable"
-                                )
-                        );
-
-
-
-
-        String extension =
-                getExtension(
-                        file.getOriginalFilename()
-                );
-
-
-
-        String filename =
-                UUID.randomUUID()
-                        + extension;
-
-
-
-        Path uploadPath =
-                Paths.get(
-                        "uploads/profile"
-                );
-
-
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
+        log.info("Chemin d'upload: {}", uploadPath);
 
         if(!Files.exists(uploadPath)){
             Files.createDirectories(uploadPath);
+            log.info("Répertoire créé: {}", uploadPath);
         }
 
+        Path filePath = uploadPath.resolve(filename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-
-        Path filePath =
-                uploadPath.resolve(filename);
-
-
-
-        Files.copy(
-                file.getInputStream(),
-                filePath,
-                StandardCopyOption.REPLACE_EXISTING
-        );
-
-
-
-
-        user.setPhotoUrl(
-                "/uploads/profile/"
-                        + filename
-        );
-
-
+        String photoUrl = "/uploads/profile/" + filename;
+        user.setPhotoUrl(photoUrl);
         userRepository.save(user);
 
+        log.info("Photo uploadée avec succès: {} -> {}", email, photoUrl);
 
+        return ResponseEntity.ok(Map.of(
+                "message", "Photo modifiée avec succès",
+                "photoUrl", photoUrl
+        ));
 
-
-        return ResponseEntity.ok(
-                Map.of(
-                        "message",
-                        "Photo modifiée avec succès",
-
-                        "photoUrl",
-                        user.getPhotoUrl()
-                )
-        );
-
-
+        } catch (Exception e) {
+            log.error("ERREUR upload photo: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Erreur: " + e.getMessage()));
+        }
     }
-
 
 
 

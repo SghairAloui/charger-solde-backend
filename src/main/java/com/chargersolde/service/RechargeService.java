@@ -11,6 +11,7 @@ import com.chargersolde.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,12 +49,29 @@ public class RechargeService {
         // 🔔 NOTIFY ADMIN
         notificationService.notifyAdmin(saved);
 
+        // 🔔 NOTIFY CLIENT — confirmation
+        String operatorName = plan.getOperator().getName();
+        notificationService.notifyClient(
+                client.getId(),
+                "Votre demande de recharge " + operatorName + " (" + plan.getLabel()
+                        + ") a été soumise avec succès. Montant : " + saved.getAmount() + " TND"
+        );
+
         return saved;
     }
+    @Transactional(readOnly = true)
     public List<RechargeRequest> getMyRequests(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow();
         return repo.findByClientId(user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RechargeRequest> getAllRequests(RechargeStatus status) {
+        if (status != null) {
+            return repo.findByStatus(status);
+        }
+        return repo.findAll();
     }
 
     public RechargeRequest validate(Long id, boolean accept) {
@@ -65,11 +83,15 @@ public class RechargeService {
 
         RechargeRequest saved = repo.save(req);
 
-        // 🔔 NOTIFY CLIENT
-        notificationService.notifyClient(
-                req.getClient().getEmail(),
-                "Your recharge is " + req.getStatus()
-        );
+        // 🔔 NOTIFY CLIENT — validation ou rejet
+        String operatorName = req.getPlan().getOperator().getName();
+        String statusFr = accept ? "validée" : "rejetée";
+        String message = "Votre demande de recharge " + operatorName
+                + " (" + req.getPlan().getLabel() + ") a été " + statusFr
+                + ". Montant : " + req.getAmount() + " TND";
+
+        notificationService.notifyClient(req.getClient().getId(), message);
 
         return saved;
-    }}
+    }
+}

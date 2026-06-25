@@ -1,7 +1,9 @@
 package com.chargersolde.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
 import lombok.*;
 
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Operator {
 
     @Id
@@ -21,9 +24,11 @@ public class Operator {
 
     private String name; // Ooredoo, Orange, TT
 
+    @Lob
+    @Column(length = 1000000)
     private String logoUrl;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "operator")
+    @OneToMany(mappedBy = "operator", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RechargePlan> plans;
 }

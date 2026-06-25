@@ -1,5 +1,6 @@
 package com.chargersolde.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "recharge_requests")
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RechargeRequest {
 
     @Id

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +59,8 @@ public class AuthService {
                     user.getNom(),
                     user.getPrenom(),
                     user.getEmail(),
-                    user.getRole().name()
+                    user.getRole().name(),
+                    user.getPhotoUrl()
             );
 
         } catch (BadCredentialsException e) {
@@ -122,23 +123,23 @@ public class AuthService {
                         "Aucun compte associé à cet email: " + request.getEmail()
                 ));
 
-        // Générer un token unique
-        String resetToken = UUID.randomUUID().toString();
+        // Générer un code à 6 chiffres
+        String code = String.format("%06d", new Random().nextInt(999999));
         long expirationMs = resetPasswordExpiration;
         LocalDateTime expiry = LocalDateTime.now().plusSeconds(expirationMs / 1000);
 
-        user.setResetPasswordToken(resetToken);
+        user.setResetPasswordToken(code);
         user.setResetPasswordTokenExpiry(expiry);
         userRepository.save(user);
 
-        // Envoyer l'email de reset
+        // Envoyer l'email avec le code
         emailService.sendResetPasswordEmail(
                 user.getEmail(),
                 user.getNom(),
-                resetToken
+                code
         );
 
-        log.info("Email de reset password envoyé à: {}", user.getEmail());
+        log.info("Email de reset password (code) envoyé à: {}", user.getEmail());
     }
 
     // =============================================
@@ -151,14 +152,22 @@ public class AuthService {
             throw new IllegalArgumentException("Les mots de passe ne correspondent pas");
         }
 
-        // Trouver l'utilisateur par token
-        User user = userRepository.findByResetPasswordToken(request.getToken())
-                .orElseThrow(() -> new InvalidTokenException("Token invalide ou inexistant"));
+        // Trouver l'utilisateur par email
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "Aucun compte associé à cet email: " + request.getEmail()
+                ));
 
-        // Vérifier l'expiration du token
+        // Vérifier le code
+        if (user.getResetPasswordToken() == null ||
+            !user.getResetPasswordToken().equals(request.getCode())) {
+            throw new InvalidTokenException("Code invalide ou inexistant");
+        }
+
+        // Vérifier l'expiration du code
         if (user.getResetPasswordTokenExpiry() == null ||
             LocalDateTime.now().isAfter(user.getResetPasswordTokenExpiry())) {
-            throw new InvalidTokenException("Le token a expiré. Veuillez refaire une demande.");
+            throw new InvalidTokenException("Le code a expiré. Veuillez refaire une demande.");
         }
 
         // Mettre à jour le mot de passe
@@ -168,5 +177,25 @@ public class AuthService {
         userRepository.save(user);
 
         log.info("Mot de passe réinitialisé pour: {}", user.getEmail());
+    }
+
+    // =============================================
+    // VALIDER LE CODE DE RÉINITIALISATION
+    // =============================================
+    public void validateResetCode(String email, String code) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "Aucun compte associé à cet email: " + email
+                ));
+
+        if (user.getResetPasswordToken() == null ||
+            !user.getResetPasswordToken().equals(code)) {
+            throw new InvalidTokenException("Code invalide");
+        }
+
+        if (user.getResetPasswordTokenExpiry() == null ||
+            LocalDateTime.now().isAfter(user.getResetPasswordTokenExpiry())) {
+            throw new InvalidTokenException("Le code a expiré. Veuillez refaire une demande.");
+        }
     }
 }
