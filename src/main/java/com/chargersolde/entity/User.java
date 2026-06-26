@@ -52,6 +52,11 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean active = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private AccountStatus accountStatus =
+            AccountStatus.APPROVED;
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
 
@@ -105,6 +110,11 @@ public class User implements UserDetails {
     @JsonIgnore
     @Override
     public boolean isEnabled() {
-        return active;
+
+        return active
+                &&
+                accountStatus == AccountStatus.APPROVED;
     }
+
+
 }

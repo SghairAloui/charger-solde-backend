@@ -94,4 +94,20 @@ public class AuthController {
         authService.validateResetCode(email, code);
         return ResponseEntity.ok(ApiResponse.success("Code valide"));
     }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(
+            @Valid @RequestBody SignupRequest request
+    ){
+
+        authService.signup(request);
+
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Demande envoyée. En attente validation admin"
+                )
+        );
+
+    }
 }

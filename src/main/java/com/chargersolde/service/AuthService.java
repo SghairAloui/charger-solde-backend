@@ -18,7 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.chargersolde.entity.AccountStatus;
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -49,6 +49,16 @@ public class AuthService {
             );
 
             User user = (User) authentication.getPrincipal();
+            if(
+                    user.getAccountStatus()
+                            != AccountStatus.APPROVED
+            ){
+
+                throw new BadCredentialsException(
+                        "Compte non validé par l'administrateur"
+                );
+
+            }
             String jwt = jwtUtil.generateToken(user);
 
             log.info("Connexion réussie pour l'utilisateur: {}", user.getEmail());
@@ -91,6 +101,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(rawPassword))
                 .role(Role.ROLE_CLIENT)
                 .active(true)
+                .accountStatus(AccountStatus.APPROVED)
                 .build();
 
         User savedClient = userRepository.save(client);
@@ -197,5 +208,58 @@ public class AuthService {
             LocalDateTime.now().isAfter(user.getResetPasswordTokenExpiry())) {
             throw new InvalidTokenException("Le code a expiré. Veuillez refaire une demande.");
         }
+    }
+
+    @Transactional
+    public void signup(
+            SignupRequest request
+    ){
+
+
+        if(userRepository.existsByEmail(request.getEmail())){
+
+            throw new EmailAlreadyExistsException(
+                    "Email existe déjà"
+            );
+
+        }
+
+
+
+        User user =
+                User.builder()
+
+                        .nom(request.getNom())
+                        .prenom(request.getPrenom())
+                        .email(request.getEmail())
+                        .numTel(request.getNumTel())
+
+                        .password(
+                                passwordEncoder.encode(
+                                        request.getPassword()
+                                )
+                        )
+
+                        .role(Role.ROLE_CLIENT)
+
+                        .active(false)
+
+                        .accountStatus(AccountStatus.PENDING)
+
+                        .build();
+
+
+
+        userRepository.save(user);
+
+
+
+        log.info(
+                "Nouvelle demande inscription {}",
+                user.getEmail()
+        );
+
+
+
     }
 }
