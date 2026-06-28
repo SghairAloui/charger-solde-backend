@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -67,11 +69,19 @@ public class RechargeService {
     }
 
     @Transactional(readOnly = true)
-    public List<RechargeRequest> getAllRequests(RechargeStatus status) {
+    public Page<RechargeRequest> getAllRequests(RechargeStatus status, int page) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                10,
+                org.springframework.data.domain.Sort.by("createdAt").descending()
+        );
+
         if (status != null) {
-            return repo.findByStatus(status);
+            return repo.findByStatus(status, pageable);
         }
-        return repo.findAll();
+
+        return repo.findAll(pageable);
     }
 
     public RechargeRequest validate(Long id, boolean accept) {

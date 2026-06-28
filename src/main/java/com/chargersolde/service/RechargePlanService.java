@@ -28,6 +28,8 @@ public class RechargePlanService {
                 .label(dto.getLabel())
                 .price(dto.getPrice())
                 .validityDays(dto.getValidityDays())
+                .active(true) // 👈 ALWAYS ACTIVE ON CREATE
+
                 .operator(operator)
                 .build();
 
@@ -55,5 +57,19 @@ public class RechargePlanService {
 
     public void delete(Long id) {
         repo.deleteById(id);
+    }
+
+    public List<RechargePlan> getActiveByOperator(Long operatorId) {
+        return repo.findByOperatorIdAndActiveTrue(operatorId);
+    }
+
+
+
+    public RechargePlan setActive(Long id, boolean active) {
+        RechargePlan plan = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+
+        plan.setActive(active);
+        return repo.save(plan);
     }
 }

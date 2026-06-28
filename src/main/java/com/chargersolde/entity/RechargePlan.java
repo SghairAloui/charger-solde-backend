@@ -21,6 +21,7 @@ public class RechargePlan {
     private String label; // 1GB, 4GB, 25GB
     private Double price;
     private Integer validityDays;
+    private boolean active = true; // 👈 NEW
 
     @JsonIgnoreProperties("plans")
     @ManyToOne

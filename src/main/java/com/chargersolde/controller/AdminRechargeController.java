@@ -75,8 +75,23 @@ public class AdminRechargeController {
     }
 
     @GetMapping("/recharge")
-    public List<RechargeRequest> getRecharges(@RequestParam(required = false) RechargeStatus status) {
-        return rechargeService.getAllRequests(status);
+    public ResponseEntity<?> getRecharges(
+            @RequestParam(required = false) RechargeStatus status,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        return ResponseEntity.ok(
+                rechargeService.getAllRequests(status, page)
+        );
+    }
+
+    @PatchMapping("/plans/{id}/block")
+    public RechargePlan block(@PathVariable Long id) {
+        return planService.setActive(id, false);
+    }
+
+    @PatchMapping("/plans/{id}/unblock")
+    public RechargePlan unblock(@PathVariable Long id) {
+        return planService.setActive(id, true);
     }
 
 }

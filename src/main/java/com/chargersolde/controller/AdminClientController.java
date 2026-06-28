@@ -2,6 +2,7 @@ package com.chargersolde.controller;
 
 
 import com.chargersolde.entity.AccountStatus;
+import com.chargersolde.entity.Role;
 import com.chargersolde.entity.User;
 import com.chargersolde.repository.UserRepository;
 
@@ -32,18 +33,19 @@ public class AdminClientController {
     /**
      * Voir les demandes inscription
      */
-    @GetMapping("/pending")
-    public ResponseEntity<List<User>> pendingClients(){
+    @GetMapping("/all")
+    public ResponseEntity<List<User>> getAllClientsByStatus() {
 
-
-        return ResponseEntity.ok(
-
-                userRepository.findByAccountStatus(
-                        AccountStatus.PENDING
+        List<User> clients = userRepository.findByRoleAndAccountStatusIn(
+                Role.ROLE_CLIENT,
+                List.of(
+                        AccountStatus.PENDING,
+                        AccountStatus.APPROVED,
+                        AccountStatus.REJECTED
                 )
-
         );
 
+        return ResponseEntity.ok(clients);
     }
 
 

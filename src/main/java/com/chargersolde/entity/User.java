@@ -116,5 +116,7 @@ public class User implements UserDetails {
                 accountStatus == AccountStatus.APPROVED;
     }
 
-
+    @Column(name = "created_by_admin")
+    @Builder.Default
+    private boolean createdByAdmin = false;
 }

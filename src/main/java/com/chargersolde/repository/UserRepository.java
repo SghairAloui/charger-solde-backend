@@ -22,5 +22,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByAccountStatus(AccountStatus status);
 
+    List<User> findByRoleAndCreatedByAdmin(
+            Role role,
+            boolean createdByAdmin
+    );
 
+    List<User> findByRoleAndAccountStatusIn(
+            Role role,
+            List<AccountStatus> statuses
+    );
 }

@@ -101,6 +101,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(rawPassword))
                 .role(Role.ROLE_CLIENT)
                 .active(true)
+                .createdByAdmin(true)   // IMPORTANT
                 .accountStatus(AccountStatus.APPROVED)
                 .build();
 

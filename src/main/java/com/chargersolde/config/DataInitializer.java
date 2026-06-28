@@ -16,25 +16,28 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
     @Override
     public void run(String... args) {
-        // Créer le compte admin par défaut s'il n'existe pas
-        if (!userRepository.existsByEmail("admin@chargersolde.com")) {
+
+        String email = "admin@chargersolde.com";
+
+        if (!userRepository.existsByEmail(email)) {
+
             User admin = User.builder()
-                    .nom("Admin")
-                    .prenom("Super")
-                    .email("admin@chargersolde.com")
-                    .numTel("00000000")
+                    .nom("Hatem")
+                    .prenom("Messoudi")
+                    .email(email)
+                    .numTel("20230214")
                     .password(passwordEncoder.encode("Admin@1234"))
                     .role(Role.ROLE_ADMIN)
                     .active(true)
                     .build();
 
             userRepository.save(admin);
+
             log.info("=================================================");
             log.info("Compte ADMIN créé avec succès !");
-            log.info("Email    : admin@chargersolde.com");
+            log.info("Email    : {}", email);
             log.info("Password : Admin@1234");
             log.info("=================================================");
         } else {

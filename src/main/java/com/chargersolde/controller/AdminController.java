@@ -74,8 +74,11 @@ public class AdminController {
         description = "Retourne la liste de tous les utilisateurs ayant le rôle CLIENT."
     )
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getClients() {
-        List<User> clients = userRepository.findByRole(Role.ROLE_CLIENT);
-        
+        List<User> clients =
+                userRepository.findByRoleAndCreatedByAdmin(
+                        Role.ROLE_CLIENT,
+                        true
+                );
         List<Map<String, Object>> clientsData = clients.stream().map(client -> Map.<String, Object>of(
                 "id", client.getId(),
                 "nom", client.getNom(),
