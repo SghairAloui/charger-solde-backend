@@ -23,5 +23,5 @@ public class AdminDashboardDTO {
 
     private Long monthRecharges;
 
-
+    private Double totalAmount;
 }

@@ -94,4 +94,12 @@ public class AdminRechargeController {
         return planService.setActive(id, true);
     }
 
+    @PatchMapping("/recharge/{id}/cancel")
+    public RechargeRequest cancel(
+            @PathVariable Long id,
+            @RequestParam String message
+    ) {
+        return rechargeService.adminCancel(id, message);
+    }
+
 }

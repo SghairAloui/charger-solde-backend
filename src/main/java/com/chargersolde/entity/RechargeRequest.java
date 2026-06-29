@@ -30,4 +30,8 @@ public class RechargeRequest {
     private User client;
 
     private LocalDateTime createdAt;
+
+    private String adminMessage;
+
+    private LocalDateTime cancelledAt;
 }

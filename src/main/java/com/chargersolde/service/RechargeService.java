@@ -104,4 +104,50 @@ public class RechargeService {
 
         return saved;
     }
+
+    public RechargeRequest adminCancel(Long id, String message) {
+
+        RechargeRequest req = repo.findById(id)
+                .orElseThrow();
+
+        // ❌ trop tard si déjà livré
+        if (req.getStatus() == RechargeStatus.DELIVERED) {
+            throw new IllegalStateException("Recharge déjà livrée, impossible d'annuler");
+        }
+
+        // ❌ si déjà en cours de traitement (optionnel si tu ajoutes plus tard)
+        if (req.getStatus() == RechargeStatus.REJECTED) {
+            throw new IllegalStateException("Recharge déjà rejetée");
+        }
+
+        req.setStatus(RechargeStatus.ADMIN_CANCELLED);
+        req.setAdminMessage(message);
+
+        RechargeRequest saved = repo.save(req);
+
+        notificationService.notifyClient(
+                req.getClient().getId(),
+                "❌ Votre recharge a été annulée par l'admin. Raison : " + message
+        );
+
+        return saved;
+    }
+
+    public RechargeRequest process(Long id) {
+
+        RechargeRequest req = repo.findById(id).orElseThrow();
+
+        // 🔴 check important
+        if (req.getStatus() != RechargeStatus.VALIDATED) {
+            throw new IllegalStateException("Cannot process non-validated request");
+        }
+
+        // ⚠️ double sécurité
+        if (req.getStatus() == RechargeStatus.ADMIN_CANCELLED) {
+            throw new IllegalStateException("Cancelled by admin");
+        }
+
+        req.setStatus(RechargeStatus.DELIVERED);
+        return repo.save(req);
+    }
 }
