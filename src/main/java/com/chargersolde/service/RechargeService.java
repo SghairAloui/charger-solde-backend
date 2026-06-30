@@ -1,5 +1,6 @@
 package com.chargersolde.service;
 
+import com.chargersolde.dto.ClientBalanceDTO;
 import com.chargersolde.dto.CreateRechargeRequestDTO;
 import com.chargersolde.entity.RechargePlan;
 import com.chargersolde.entity.RechargeRequest;
@@ -149,5 +150,29 @@ public class RechargeService {
 
         req.setStatus(RechargeStatus.DELIVERED);
         return repo.save(req);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientBalanceDTO> getAllClientBalances() {
+
+        List<Object[]> results = repo.getBalancesByClients();
+
+        return results.stream()
+                .map(row -> {
+
+                    Long clientId = (Long) row[0];
+                    Double balance = ((Number) row[1]).doubleValue();
+
+                    User user = userRepository.findById(clientId)
+                            .orElseThrow();
+
+                    return new ClientBalanceDTO(
+                            clientId,
+                            user.getEmail(),
+                            balance
+                    );
+
+                })
+                .toList();
     }
 }

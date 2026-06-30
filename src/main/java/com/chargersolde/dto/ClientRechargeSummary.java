@@ -15,4 +15,7 @@ public class ClientRechargeSummary {
     private long pendingCount;
     private long validatedCount;
     private long rejectedCount;
+
+    private Double balance; // ✅ nouveau
+
 }

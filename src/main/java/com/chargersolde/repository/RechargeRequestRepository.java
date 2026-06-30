@@ -4,6 +4,7 @@ import com.chargersolde.entity.RechargeRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -52,4 +53,23 @@ public interface RechargeRequestRepository extends JpaRepository<RechargeRequest
             RechargeStatus status
     );
 
+    @Query("""
+    SELECT r.client.id, COALESCE(SUM(r.amount),0)
+    FROM RechargeRequest r
+    WHERE r.status = com.chargersolde.entity.RechargeStatus.VALIDATED
+    GROUP BY r.client.id
+""")
+    List<Object[]> getBalancesByClients();
+
+
+    @Query("""
+    SELECT SUM(r.amount)
+    FROM RechargeRequest r
+    WHERE r.client.id = :clientId
+    AND r.status = :status
+""")
+    Double sumAmountByClientIdAndStatus(
+            @Param("clientId") Long clientId,
+            @Param("status") RechargeStatus status
+    );
 }

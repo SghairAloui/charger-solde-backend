@@ -30,27 +30,26 @@ public class ClaimService {
     // ─── CLIENT: Create a claim ───────────────────────────────────
     @Transactional
     public ClaimDTO createClaim(String email, CreateClaimRequest request) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
 
         Claim claim = Claim.builder()
                 .user(user)
+                .phoneNumber(request.getPhoneNumber())
                 .subject(request.getSubject())
-                .description(request.getDescription())
                 .status(ClaimStatus.PENDING)
                 .build();
 
         Claim saved = claimRepository.save(claim);
-        log.info("Réclamation créée par {} : {}", email, saved.getSubject());
 
-        // 🔔 NOTIFY ADMIN
-        String adminMsg = "Nouvelle réclamation de " + user.getPrenom() + " " + user.getNom()
-                + " — Sujet : " + saved.getSubject();
-        messagingTemplate.convertAndSend("/topic/admin/claims", adminMsg);
+        messagingTemplate.convertAndSend(
+                "/topic/admin/claims",
+                "Nouvelle réclamation de " + request.getPhoneNumber()
+        );
 
         return toDTO(saved);
     }
-
     // ─── CLIENT: Get own claims ───────────────────────────────────
     public List<ClaimDTO> getMyClaims(String email) {
         User user = userRepository.findByEmail(email)
@@ -104,8 +103,8 @@ public class ClaimService {
                 .id(claim.getId())
                 .userId(claim.getUser().getId())
                 .userName(claim.getUser().getPrenom() + " " + claim.getUser().getNom())
+                .phoneNumber(claim.getPhoneNumber())
                 .subject(claim.getSubject())
-                .description(claim.getDescription())
                 .status(claim.getStatus())
                 .adminResponse(claim.getAdminResponse())
                 .createdAt(claim.getCreatedAt())

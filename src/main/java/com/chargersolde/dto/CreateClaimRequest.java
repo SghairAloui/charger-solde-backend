@@ -5,9 +5,10 @@ import lombok.Data;
 
 @Data
 public class CreateClaimRequest {
-    @NotBlank(message = "Le sujet est obligatoire")
+
+    @NotBlank
+    private String phoneNumber;
+
+    @NotBlank
     private String subject;
-    
-    @NotBlank(message = "La description est obligatoire")
-    private String description;
 }

@@ -24,13 +24,12 @@ public class Claim {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private String subject;
+    private String phoneNumber; // 👈 NEW
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    private String subject; // seul champ métier
 
     @Enumerated(EnumType.STRING)
-    private ClaimStatus status; // PENDING, IN_PROGRESS, RESOLVED, REJECTED
+    private ClaimStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String adminResponse;

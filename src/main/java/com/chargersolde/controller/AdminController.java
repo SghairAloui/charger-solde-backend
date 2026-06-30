@@ -1,9 +1,11 @@
 package com.chargersolde.controller;
 
 import com.chargersolde.dto.ApiResponse;
+import com.chargersolde.dto.ClientBalanceDTO;
 import com.chargersolde.dto.CreateClientRequest;
 import com.chargersolde.entity.User;
 import com.chargersolde.service.AuthService;
+import com.chargersolde.service.RechargeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,7 @@ public class AdminController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final RechargeService rechargeService;
 
     // =============================================
     // POST /api/admin/clients
@@ -123,5 +127,12 @@ public class AdminController {
                 : "Client suspendu avec succès";
 
         return ResponseEntity.ok(ApiResponse.success(statusMsg, data));
+    }
+
+    @GetMapping("/clients/balances")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<ClientBalanceDTO> balances() {
+
+        return rechargeService.getAllClientBalances();
     }
 }

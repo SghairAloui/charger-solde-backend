@@ -37,29 +37,66 @@ public class DashboardService {
     }
 
     public List<ClientRechargeSummary> getClientRechargeSummary() {
+
         List<User> clients = userRepository.findByRole(Role.ROLE_CLIENT);
         List<ClientRechargeSummary> summaries = new ArrayList<>();
 
         for (User client : clients) {
+
             long total = rechargeRepository.countByClientId(client.getId());
-            long pending = rechargeRepository.countByClientIdAndStatus(client.getId(), RechargeStatus.PENDING);
-            long validated = rechargeRepository.countByClientIdAndStatus(client.getId(), RechargeStatus.VALIDATED);
-            long rejected = rechargeRepository.countByClientIdAndStatus(client.getId(), RechargeStatus.REJECTED);
-            double totalAmount = rechargeRepository.sumAmountByClientId(client.getId());
+
+            long pending = rechargeRepository.countByClientIdAndStatus(
+                    client.getId(),
+                    RechargeStatus.PENDING
+            );
+
+            long validated = rechargeRepository.countByClientIdAndStatus(
+                    client.getId(),
+                    RechargeStatus.VALIDATED
+            );
+
+            long rejected = rechargeRepository.countByClientIdAndStatus(
+                    client.getId(),
+                    RechargeStatus.REJECTED
+            );
+
+
+            // Toutes les commandes
+            double totalAmount = rechargeRepository.sumAmountByClientId(
+                    client.getId()
+            );
+
+
+            // ✅ Solde = uniquement commandes validées
+            Double balance = rechargeRepository
+                    .sumAmountByClientIdAndStatus(
+                            client.getId(),
+                            RechargeStatus.VALIDATED
+                    );
+
+            if (balance == null) {
+                balance = 0.0;
+            }
+
 
             summaries.add(ClientRechargeSummary.builder()
                     .clientId(client.getId())
                     .nom(client.getNom())
                     .prenom(client.getPrenom())
                     .email(client.getEmail())
+
                     .totalRecharges(total)
                     .totalAmount(totalAmount)
+
                     .pendingCount(pending)
                     .validatedCount(validated)
                     .rejectedCount(rejected)
+
+                    // ✅ nouveau champ
+                    .balance(balance)
+
                     .build());
         }
 
         return summaries;
-    }
-}
+    }}

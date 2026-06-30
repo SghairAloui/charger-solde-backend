@@ -12,8 +12,8 @@ public class ClaimDTO {
     private Long id;
     private Long userId;
     private String userName;
+    private String phoneNumber; // 👈 NEW
     private String subject;
-    private String description;
     private ClaimStatus status;
     private String adminResponse;
     private LocalDateTime createdAt;
