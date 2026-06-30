@@ -63,10 +63,18 @@ public class RechargeService {
         return saved;
     }
     @Transactional(readOnly = true)
-    public List<RechargeRequest> getMyRequests(String email) {
+    public Page<RechargeRequest> getMyRequests(String email, int page, int size) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow();
-        return repo.findByClientId(user.getId());
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                org.springframework.data.domain.Sort.by("createdAt").descending()
+        );
+
+        return repo.findByClientId(user.getId(), pageable);
     }
 
     @Transactional(readOnly = true)
@@ -174,5 +182,11 @@ public class RechargeService {
 
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RechargeRequest> getMyRequests(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return repo.findByClientId(user.getId());
     }
 }
