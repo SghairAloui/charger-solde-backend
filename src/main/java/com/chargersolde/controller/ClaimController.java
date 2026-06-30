@@ -3,6 +3,7 @@ package com.chargersolde.controller;
 import com.chargersolde.dto.ApiResponse;
 import com.chargersolde.dto.ClaimDTO;
 import com.chargersolde.dto.CreateClaimRequest;
+import com.chargersolde.dto.PageResponse;
 import com.chargersolde.entity.Claim.ClaimStatus;
 import com.chargersolde.service.ClaimService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,18 +46,39 @@ public class ClaimController {
     @GetMapping("/my")
     @PreAuthorize("hasRole('CLIENT')")
     @Operation(summary = "Mes réclamations")
-    public ResponseEntity<ApiResponse<List<ClaimDTO>>> getMyClaims(Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.success("Réclamations récupérées",
-                claimService.getMyClaims(auth.getName())));
+    public ResponseEntity<ApiResponse<PageResponse<ClaimDTO>>> getMyClaims(
+            Authentication auth,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Réclamations récupérées",
+                        claimService.getMyClaims(
+                                auth.getName(),
+                                page,
+                                size
+                        )
+                )
+        );
     }
 
     // ── ADMIN: Get all claims ─────────────────────────────────────
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Toutes les réclamations (Admin)")
-    public ResponseEntity<ApiResponse<List<ClaimDTO>>> getAllClaims() {
-        return ResponseEntity.ok(ApiResponse.success("Liste des réclamations",
-                claimService.getAllClaims()));
+    @Operation(summary = "Toutes les réclamations")
+    public ResponseEntity<ApiResponse<PageResponse<ClaimDTO>>> getAllClaims(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Liste des réclamations",
+                        claimService.getAllClaims(page,size)
+                )
+        );
     }
 
     // ── ADMIN: Update status + response ───────────────────────────

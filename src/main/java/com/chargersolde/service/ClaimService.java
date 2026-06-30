@@ -2,6 +2,7 @@ package com.chargersolde.service;
 
 import com.chargersolde.dto.ClaimDTO;
 import com.chargersolde.dto.CreateClaimRequest;
+import com.chargersolde.dto.PageResponse;
 import com.chargersolde.entity.Claim;
 import com.chargersolde.entity.Claim.ClaimStatus;
 import com.chargersolde.entity.User;
@@ -13,7 +14,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,19 +54,64 @@ public class ClaimService {
         return toDTO(saved);
     }
     // ─── CLIENT: Get own claims ───────────────────────────────────
-    public List<ClaimDTO> getMyClaims(String email) {
+    public PageResponse<ClaimDTO> getMyClaims(
+            String email,
+            int page,
+            int size
+    ) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
-        return claimRepository.findByUserId(user.getId())
-                .stream().map(this::toDTO).collect(Collectors.toList());
-    }
 
+
+        Pageable pageable = PageRequest.of(page, size);
+
+
+        Page<Claim> claims =
+                claimRepository.findByUserId(user.getId(), pageable);
+
+
+        return PageResponse.<ClaimDTO>builder()
+                .content(
+                        claims.getContent()
+                                .stream()
+                                .map(this::toDTO)
+                                .collect(Collectors.toList())
+                )
+                .page(claims.getNumber())
+                .size(claims.getSize())
+                .totalElements(claims.getTotalElements())
+                .totalPages(claims.getTotalPages())
+                .last(claims.isLast())
+                .build();
+    }
     // ─── ADMIN: Get all claims ────────────────────────────────────
-    public List<ClaimDTO> getAllClaims() {
-        return claimRepository.findAll()
-                .stream().map(this::toDTO).collect(Collectors.toList());
-    }
+    public PageResponse<ClaimDTO> getAllClaims(
+            int page,
+            int size
+    ) {
 
+        Pageable pageable = PageRequest.of(page, size);
+
+
+        Page<Claim> claims =
+                claimRepository.findAll(pageable);
+
+
+        return PageResponse.<ClaimDTO>builder()
+                .content(
+                        claims.getContent()
+                                .stream()
+                                .map(this::toDTO)
+                                .collect(Collectors.toList())
+                )
+                .page(claims.getNumber())
+                .size(claims.getSize())
+                .totalElements(claims.getTotalElements())
+                .totalPages(claims.getTotalPages())
+                .last(claims.isLast())
+                .build();
+    }
     // ─── ADMIN: Update claim status ───────────────────────────────
     @Transactional
     public ClaimDTO updateStatus(Long id, ClaimStatus status, String adminResponse) {
