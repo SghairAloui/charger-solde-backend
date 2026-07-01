@@ -2,20 +2,15 @@ package com.chargersolde.controller;
 
 import com.chargersolde.dto.AdminDashboardDTO;
 import com.chargersolde.dto.ClientRechargeSummary;
+import com.chargersolde.dto.CreateAlertDTO;
 import com.chargersolde.dto.RechargePlanDTO;
-import com.chargersolde.entity.Operator;
-import com.chargersolde.entity.RechargePlan;
-import com.chargersolde.entity.RechargeRequest;
-import com.chargersolde.service.DashboardService;
-import com.chargersolde.service.OperatorService;
-import com.chargersolde.service.RechargePlanService;
-import com.chargersolde.service.RechargeService;
+import com.chargersolde.entity.*;
+import com.chargersolde.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
     import java.util.List;
-import com.chargersolde.entity.RechargeStatus;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -28,7 +23,9 @@ public class AdminRechargeController {
     private final RechargeService rechargeService;
 
     private final DashboardService service;
+    private final BalanceService balanceService;
 
+    private final AlertService alertService;
 
     @PostMapping("/operators")
     public Operator createOperator(@RequestBody Operator op) {
@@ -102,4 +99,55 @@ public class AdminRechargeController {
         return rechargeService.adminCancel(id, message);
     }
 
+
+
+    @GetMapping("/clients/{id}/balance")
+    public ResponseEntity<?> balance(
+            @PathVariable Long id,
+            @RequestParam(defaultValue="1") int days
+    ){
+
+        return ResponseEntity.ok(
+                balanceService.getBalance(id,days)
+        );
+
+    }
+
+    @PatchMapping("/clients/{id}/pay")
+    public ResponseEntity<?> pay(
+            @PathVariable Long id
+    ){
+
+        balanceService.payClient(id);
+
+        return ResponseEntity.ok(
+                "Client payé"
+        );
+
+    }
+
+    @PostMapping("/alerts")
+    public ResponseEntity<?> createAlert(
+            @RequestBody CreateAlertDTO dto
+    ){
+
+        return ResponseEntity.ok(
+                alertService.sendAlert(dto)
+        );
+
+    }
+
+    @PatchMapping("/alerts/{id}/disable")
+    public void disable(
+            @PathVariable Long id
+    ){
+
+        alertService.disable(id);
+
+    }
+
+    @GetMapping("/alerts")
+    public ResponseEntity<List<SystemAlert>> getAlerts() {
+        return ResponseEntity.ok(alertService.getActiveAlerts());
+    }
 }

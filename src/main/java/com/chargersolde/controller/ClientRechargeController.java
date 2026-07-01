@@ -2,6 +2,8 @@ package com.chargersolde.controller;
 
 import com.chargersolde.dto.CreateRechargeRequestDTO;
 import com.chargersolde.entity.RechargeRequest;
+import com.chargersolde.entity.SystemAlert;
+import com.chargersolde.service.AlertService;
 import com.chargersolde.service.RechargeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,7 +20,7 @@ import java.util.List;
 public class ClientRechargeController {
 
     private final RechargeService rechargeService;
-
+    private final AlertService alertService;
     @PostMapping("/recharge")
     public RechargeRequest create(
             @RequestBody CreateRechargeRequestDTO dto,
@@ -39,5 +41,12 @@ public class ClientRechargeController {
     @GetMapping("/recharges/all")
     public List<RechargeRequest> getAllMyRequests(Authentication auth) {
         return rechargeService.getMyRequests(auth.getName());
+    }
+
+    @GetMapping("/alerts")
+    public List<SystemAlert> alerts(){
+
+        return alertService.getActiveAlerts();
+
     }
 }

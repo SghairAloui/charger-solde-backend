@@ -72,4 +72,35 @@ public interface RechargeRequestRepository extends JpaRepository<RechargeRequest
             @Param("clientId") Long clientId,
             @Param("status") RechargeStatus status
     );
+
+
+    @Query("""
+SELECT COALESCE(SUM(r.amount),0)
+FROM RechargeRequest r
+WHERE r.client.id=:clientId
+AND r.status=:status
+AND r.createdAt BETWEEN :start AND :end
+""")
+    Double sumAmountByClientAndDate(
+            @Param("clientId") Long clientId,
+            @Param("status") RechargeStatus status,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+
+
+    @Query("""
+SELECT COUNT(r)
+FROM RechargeRequest r
+WHERE r.client.id=:clientId
+AND r.status=:status
+AND r.createdAt BETWEEN :start AND :end
+""")
+    Long countByClientAndDate(
+            @Param("clientId") Long clientId,
+            @Param("status") RechargeStatus status,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }

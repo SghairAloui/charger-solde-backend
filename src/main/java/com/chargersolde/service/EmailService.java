@@ -56,7 +56,7 @@ public class EmailService {
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject("Charge Pay - Code de réinitialisation de votre mot de passe");
+            helper.setSubject("WAHA NET - Code de réinitialisation de votre mot de passe");
 
             String resetLink = "http://localhost:4200/auth/reset-password?code=" + resetCode + "&email=" + toEmail;
             String htmlContent = buildResetPasswordEmailHtml(nom, resetCode, resetLink);
@@ -81,7 +81,7 @@ public class EmailService {
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject("Charge Pay - Mise à jour de votre réclamation");
+            helper.setSubject("WAHA NET - Mise à jour de votre réclamation");
 
             String htmlContent = buildClaimStatusEmailHtml(nom, subject, status, response);
             helper.setText(htmlContent, true);
@@ -130,7 +130,7 @@ public class EmailService {
                 <div class="container">
                     <div class="header">
                         <div class="logo-icon">⚡</div>
-                        <h1>Charge Pay</h1>
+                        <h1>WAHA NET</h1>
                         <p>Bienvenue sur notre plateforme</p>
                     </div>
                     
@@ -158,7 +158,7 @@ public class EmailService {
                     
                     <div class="footer">
                         <p>Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
-                        <p>© 2024 Charge Pay. Tous droits réservés.</p>
+                        <p>© 2026 WAHA NET. Tous droits réservés.</p>
                     </div>
                 </div>
             </body>
@@ -197,7 +197,7 @@ public class EmailService {
                 <div class="container">
                     <div class="header">
                         <div class="logo-icon">🔐</div>
-                        <h1>Charge Pay</h1>
+                        <h1>WAHA NET</h1>
                         <p>Réinitialisation de mot de passe</p>
                     </div>
                     
@@ -225,7 +225,7 @@ public class EmailService {
                     
                     <div class="footer">
                         <p>Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
-                        <p>© 2024 Charge Pay. Tous droits réservés.</p>
+                        <p>© 2026 WAHA NET. Tous droits réservés.</p>
                     </div>
                 </div>
             </body>
@@ -267,7 +267,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>Charge Pay</h1>
+                        <h1>WAHA NET</h1>
                         <p>Réclamation</p>
                     </div>
                     
@@ -285,7 +285,7 @@ public class EmailService {
                     
                     <div class="footer">
                         <p>Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
-                        <p>© 2024 Charge Pay. Tous droits réservés.</p>
+                        <p>© 2026 WAHA NET. Tous droits réservés.</p>
                     </div>
                 </div>
             </body>
