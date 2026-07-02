@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-    import java.util.List;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -104,13 +106,12 @@ public class AdminRechargeController {
     @GetMapping("/clients/{id}/balance")
     public ResponseEntity<?> balance(
             @PathVariable Long id,
-            @RequestParam(defaultValue="1") int days
-    ){
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate){
 
         return ResponseEntity.ok(
-                balanceService.getBalance(id,days)
+                balanceService.getBalance(id, startDate, endDate)
         );
-
     }
 
     @PatchMapping("/clients/{id}/pay")

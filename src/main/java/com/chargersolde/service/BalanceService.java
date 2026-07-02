@@ -81,96 +81,75 @@ public class BalanceService {
 
     public ClientBalanceResponse getBalance(
             Long clientId,
-            int days
-    ){
+            LocalDate startDate,
+            LocalDate endDate) {
 
+        // Vérifier que le client existe
+        User user = userRepo.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Client introuvable"));
 
-        User user =
-                userRepo.findById(clientId)
-                        .orElseThrow();
+        // Vérifier les dates
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException(
+                    "La date de début doit être inférieure ou égale à la date de fin."
+            );
+        }
 
-
-
-        List<DailyBalanceDTO> result =
-                new ArrayList<>();
-
+        List<DailyBalanceDTO> result = new ArrayList<>();
 
         double total = 0;
         int totalOrders = 0;
 
+        LocalDate currentDate = startDate;
 
+        while (!currentDate.isAfter(endDate)) {
 
-        LocalDate today = LocalDate.now();
+            LocalDateTime start = currentDate.atStartOfDay();
+            LocalDateTime end = currentDate.atTime(23, 59, 59);
 
+            Double amount = rechargeRepo.sumAmountByClientAndDate(
+                    clientId,
+                    RechargeStatus.VALIDATED,
+                    start,
+                    end
+            );
 
+            Long orders = rechargeRepo.countByClientAndDate(
+                    clientId,
+                    RechargeStatus.VALIDATED,
+                    start,
+                    end
+            );
 
-        for(int i=0;i<days;i++){
-
-
-            LocalDate date =
-                    today.minusDays(i);
-
-
-
-            LocalDateTime start =
-                    date.atStartOfDay();
-
-
-            LocalDateTime end =
-                    date.atTime(23,59,59);
-
-
-
-            Double amount =
-                    rechargeRepo.sumAmountByClientAndDate(
-                            clientId,
-                            RechargeStatus.VALIDATED,
-                            start,
-                            end
-                    );
-
-
-            Long orders =
-                    rechargeRepo.countByClientAndDate(
-                            clientId,
-                            RechargeStatus.VALIDATED,
-                            start,
-                            end
-                    );
-
-
-            if(amount == null){
+            if (amount == null) {
                 amount = 0D;
             }
 
+            if (orders == null) {
+                orders = 0L;
+            }
 
-
-            result.add(
-                    new DailyBalanceDTO(
-                            date,
-                            amount,
-                            orders.intValue()
-                    )
-            );
-
+            result.add(new DailyBalanceDTO(
+                    currentDate,
+                    amount,
+                    orders.intValue()
+            ));
 
             total += amount;
-
             totalOrders += orders.intValue();
 
+            currentDate = currentDate.plusDays(1);
         }
-
-
 
         return new ClientBalanceResponse(
                 clientId,
                 user.getEmail(),
-                days,
+                startDate,
+                endDate,
                 total,
                 totalOrders,
                 result
         );
-
     }
 
 

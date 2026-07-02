@@ -3,6 +3,7 @@ package com.chargersolde.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -14,8 +15,9 @@ public class ClientBalanceResponse {
 
     private String email;
 
-    private Integer days;
+    private LocalDate startDate;
 
+    private LocalDate endDate;
     private Double totalBalance;
 
     private Integer totalOrders;
